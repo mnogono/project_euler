@@ -108,15 +108,42 @@ void project3(int method) {
 	std::cout << "The prime factors of 13195 are 5, 7, 13 and 29.\n";
 	std::cout << "What is the largest prime factor of the number 600851475143 ?\n";
 
-	int64_t number = 600851475143 >> 1;
-	for (int64_t factor = 3; factor < number; ++factor, number >>= 1) {
-		if (number % factor == 0) {
-			const auto value = number / factor;
-			if (IsPrime(value)) {
-				std::cout << "Result: " << value << '\n';
-				break;
+	enum class Method {
+		kFirst = 1,
+		kSecond
+	} const m = static_cast<Method>(method);
+
+
+	switch (m) {
+	case Method::kFirst: {
+		//the most basic method
+		int64_t number = 600851475143 >> 1;
+		int64_t max_prime_factor = -1;
+		for (int64_t factor = 3; factor < number; factor += 2) {
+			if (number % factor == 0) {
+				const auto value = number / factor;
+				if (IsPrime(value) && value > max_prime_factor) {
+					max_prime_factor = value;
+				}
 			}
 		}
+		std::cout << "Result: " << max_prime_factor << '\n';
+		break;
+	}
+	case Method::kSecond: {
+		//more advance faster way to find biggest prime factor
+		int64_t number = 600851475143 >> 1;
+		for (int64_t factor = 3; factor < number; factor += 2, number >>= 1) {
+			if (number % factor == 0) {
+				const auto value = number / factor;
+				if (IsPrime(value)) {
+					std::cout << "Result: " << value << '\n';
+					break;
+				}
+			}
+		}
+		break;
+	}
 	}
 }
 
@@ -233,8 +260,8 @@ void project7(int method) {
 	cout << "By listing the first six prime numbers: 2, 3, 5, 7, 11, and 13, we can see that the 6th prime is 13.\n";
 	cout << "What is the 10 001st prime number ?\n";
 	enum Method {
-		kFirst,
-		kSecond
+		kFirst = 1,
+		kSecond = 2
 	} const m = static_cast<Method>(method ? method : kFirst);
 
 	int prime = 0;
@@ -252,6 +279,7 @@ void project7(int method) {
 	}
 	else if (m == kSecond) {
 		int prime_count = 6;
+		//TODO allocate in heap
 		int primes[10001] = {2, 3, 5, 7, 11, 13};
 		int test = 15;
 		while (prime_count != 10001) {
@@ -581,7 +609,7 @@ int main(int argc, char** argv) {
 	using namespace std::chrono;
 
 	if (argc == 1) {
-		std::cout << "Using program_euler.exe <project number>\n";
+		std::cout << "Using program_euler.exe <project number> <method>\n";
 		return 0;
 	}
 
