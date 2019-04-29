@@ -7,6 +7,9 @@
 #include <chrono>
 #include <vector>
 #include <cassert>
+#include <numeric>
+#include <algorithm>
+#include <functional>
 
 using namespace std;
 
@@ -15,13 +18,40 @@ void project1(int method) {
 	std::cout << "The sum of these multiples is 23.\n";
 	std::cout << "Find the sum of all the multiples of 3 or 5 below 1000.\n";
 
-	int sum = 0;
-	for (int i = 1; i < 1000; ++i) {
-		if (i % 3 == 0 || i % 5 == 0) {
-			sum += i;
+	enum class Method {
+		kFirst = 1,
+		kSecond
+	} const m = static_cast<Method>(method);
+	switch (m) {
+	case Method::kFirst: {
+		int sum = 0;
+		for (int i = 1; i < 1000; ++i) {
+			if (i % 3 == 0 || i % 5 == 0) {
+				sum += i;
+			}
 		}
+		std::cout << "Result: " << sum << '\n';
+		//233168, 0ms
+		break;
 	}
-	std::cout << "Result: " << sum << '\n';
+	case Method::kSecond: {
+		std::vector<int> naturals(1000);
+		int n = 0;
+		std::vector<int> numbers(1000);
+		std::iota(std::begin(naturals), std::end(naturals), 0);
+		std::for_each(std::begin(naturals), std::end(naturals), [&numbers](int i) {
+			if (i % 3 == 0 || i % 5 == 0) {
+				numbers.emplace_back(i);
+			}
+		});
+		const auto sum = std::accumulate(std::begin(numbers), std::end(numbers), 0);
+		std::cout << "Result: " << sum << '\n';
+		//233168, 0ms
+		break;
+	}
+	default:
+		std::cout << "Unexpected method: " << method << '\n';
+	}
 }
 
 void project2(int method) {
@@ -381,6 +411,172 @@ void project10(int method) {
 	//142913828922 , 503..520ms
 }
 
+int32_t HorRightProd(int32_t mat[][20], std::pair<int, int>&& p) {
+	auto& x = p.first;
+	auto& y = p.second;
+
+	if (x > 16) {
+		return 0;
+	}
+
+	return mat[y][x] * mat[y][x + 1] * mat[y][x + 2] * mat[y][x + 3];
+}
+
+int32_t HorLeftProd(int32_t mat[][20], std::pair<int, int>&& p) {
+	auto& x = p.first;
+	auto& y = p.second;
+
+	if (x < 3) {
+		return 0;
+	}
+
+	return mat[y][x - 3] * mat[y][x - 2] * mat[y][x - 1] * mat[y][x];
+}
+
+int32_t VerBottomProd(int32_t mat[][20], std::pair<int, int>&& p) {
+	const auto& x = p.first;
+	const auto& y = p.second;
+
+	if (y > 16) {
+		return 0;
+	}
+
+	return mat[y][x] * mat[y + 1][x] * mat[y + 2][x] * mat[y + 3][x];
+}
+
+int32_t VerUpProd(int32_t mat[][20], std::pair<int, int>&& p) {
+	const auto& x = p.first;
+	const auto& y = p.second;
+
+	if (y < 3) {
+		return 0;
+	}
+
+	return mat[y - 3][x] * mat[y - 2][x] * mat[y - 1][x] * mat[y][x];
+}
+
+int32_t DiagBottomRightProd(int32_t mat[][20], std::pair<int, int>&& p) {
+	const auto& x = p.first;
+	const auto& y = p.second;
+	if (x > 16) {
+		return 0;
+	}
+	if (y > 16) {
+		return 0;
+	}
+
+	return mat[y][x] * mat[y + 1][x + 1] * mat[y + 2][x + 2] * mat[y + 3][x + 3];
+}
+
+int32_t DiagUpLeftProd(int32_t mat[][20], std::pair<int, int>&& p) {
+	const auto& x = p.first;
+	const auto& y = p.second;
+	if (x < 3) {
+		return 0;
+	}
+	if (y < 3) {
+		return 0;
+	}
+
+	return mat[y][x] * mat[y - 1][x - 1] * mat[y - 2][x - 2] * mat[y - 3][x - 3];
+}
+
+int32_t DiagBottomLeftProd(int32_t mat[][20], std::pair<int, int>&& p) {
+	const auto& x = p.first;
+	const auto& y = p.second;
+	if (x < 3) {
+		return 0;
+	}
+	if (y > 16) {
+		return 0;
+	}
+
+	return mat[y][x] * mat[y + 1][x - 1] * mat[y + 2][x - 2] * mat[y + 3][x - 3];
+}
+
+int32_t DiagUpRightProd(int32_t mat[][20], std::pair<int, int>&& p) {
+	const auto& x = p.first;
+	const auto& y = p.second;
+	if (x > 16) {
+		return 0;
+	}
+	if (y < 3) {
+		return 0;
+	}
+
+	return mat[y][x] * mat[y - 1][x + 1] * mat[y - 2][x + 2] * mat[y - 3][x + 3];
+}
+
+void project11(int method) {
+	std::cout << "In the 20×20 grid below, four numbers along a diagonal line have been marked in red.\n";
+	int32_t mat[20][20] =
+	{
+		{8, 2, 22, 97, 38, 15, 0, 40, 0, 75, 4, 5, 7, 78, 52, 12, 50, 77, 91, 8},
+		{49, 49, 99, 40, 17, 81, 18, 57, 60, 87, 17, 40, 98, 43, 69, 48, 4, 56, 62, 0},
+		{81, 49, 31, 73, 55, 79, 14, 29, 93, 71, 40, 67, 53, 88, 30, 3, 49, 13, 36, 65},
+		{52, 70, 95, 23, 4, 60, 11, 42, 69, 24, 68, 56, 1, 32, 56, 71, 37, 2, 36, 91},
+		{22, 31, 16, 71, 51, 67, 63, 89, 41, 92, 36, 54, 22, 40, 40, 28, 66, 33, 13, 80},
+		{24, 47, 32, 60, 99, 3, 45, 2, 44, 75, 33, 53, 78, 36, 84, 20, 35, 17, 12, 50},
+		{32, 98, 81, 28, 64, 23, 67, 10, 26, 38, 40, 67, 59, 54, 70, 66, 18, 38, 64, 70},
+		{67, 26, 20, 68, 2, 62, 12, 20, 95, 63, 94, 39, 63, 8, 40, 91, 66, 49, 94, 21},
+		{24, 55, 58, 5, 66, 73, 99, 26, 97, 17, 78, 78, 96, 83, 14, 88, 34, 89, 63, 72},
+		{21, 36, 23, 9, 75, 0, 76, 44, 20, 45, 35, 14, 0, 61, 33, 97, 34, 31, 33, 95},
+		{78, 17, 53, 28, 22, 75, 31, 67, 15, 94, 3, 80, 4, 62, 16, 14, 9, 53, 56, 92},
+		{16, 39, 5, 42, 96, 35, 31, 47, 55, 58, 88, 24, 0, 17, 54, 24, 36, 29, 85, 57},
+		{86, 56, 0, 48, 35, 71, 89, 7, 5, 44, 44, 37, 44, 60, 21, 58, 51, 54, 17, 58},
+		{19, 80, 81, 68, 5, 94, 47, 69, 28, 73, 92, 13, 86, 52, 17, 77, 4, 89, 55, 40},
+		{4, 52, 8, 83, 97, 35, 99, 16, 7, 97, 57, 32, 16, 26, 26, 79, 33, 27, 98, 66},
+		{88, 36, 68, 87, 57, 62, 20, 72, 3, 46, 33, 67, 46, 55, 12, 32, 63, 93, 53, 69},
+		{4, 42, 16, 73, 38, 25, 39, 11, 24, 94, 72, 18, 8, 46, 29, 32, 40, 62, 76, 36},
+		{20, 69, 36, 41, 72, 30, 23, 88, 34, 62, 99, 69, 82, 67, 59, 85, 74, 4, 36, 16},
+		{20, 73, 35, 29, 78, 31, 90, 1, 74, 31, 49, 71, 48, 86, 81, 16, 23, 57, 5, 54},
+		{1, 70, 54, 71, 83, 51, 54, 69, 16, 92, 33, 48, 61, 43, 52, 1, 89, 19, 67, 48},
+	};
+	std::cout << "The product of these numbers is 26 × 63 × 78 × 14 = 1788696.\n" <<
+		"What is the greatest product of four adjacent numbers in the same direction(up, down, left, right, or diagonally) in the 20×20 grid ?\n";
+
+	enum class Method {
+		kFirst = 1
+	} const m = static_cast<Method>(method);
+
+	if (m == Method::kFirst) {
+		auto max_product = 0;
+		using ProdFun = std::function<int32_t(int32_t [][20], std::pair<int, int>)>;
+		std::vector<ProdFun> v;
+		v.emplace_back(&HorRightProd);
+		v.emplace_back(&VerBottomProd);
+		v.emplace_back(&DiagBottomRightProd);
+		v.emplace_back(&DiagBottomLeftProd);
+
+		std::vector<std::string> names;
+		names.emplace_back("HorRightProd");
+		names.emplace_back("VerBottomProd");
+		names.emplace_back("DiagBottomRightProd");
+		names.emplace_back("DiagBottomLeftProd");
+
+		int max_x = 0;
+		int max_y = 0;
+		std::string max_name;
+		for (int y = 0; y < 20; ++y) {
+			for (int x = 0; x < 20; ++x) {
+				int dir = 0;
+				std::for_each(v.begin(), v.end(), [&](auto fn) {
+					const auto product = fn(mat, {x, y});
+					if (max_product < product) {
+						max_product = product;
+						max_x = x;
+						max_y = y;
+						max_name = names[dir];
+					}
+					++dir;
+				});
+			}
+		}
+		//70600674, {x: 6, y: 12}
+		std::cout << "Result: " << max_product << " max_x: " << max_x << " max_y: " << max_y << " max_name: " << max_name << '\n';
+	}
+}
+
 int main(int argc, char** argv) {
 	using namespace std::chrono;
 
@@ -427,6 +623,9 @@ int main(int argc, char** argv) {
 	}
 	else if (project == "10") {
 		project10(method);
+	}
+	else if (project == "11") {
+		project11(method);
 	}
 	else {
 		std::cout << "unimplemented project: " << project << "\n";
