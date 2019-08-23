@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <functional>
 #include <map>
+#include <sstream>
 
 #include <amp.h>
 
@@ -122,7 +123,7 @@ void project3(int method) {
 	switch (m) {
 	case Method::kFirst: {
 		//the most basic method
-		const int64_t number = 600851475143 >> 1;
+		const int64_t number = 600851475143;
 		for (int64_t factor = 3; factor < number; factor += 2) {
 			if (number % factor == 0) {
 				if (IsPrime(factor) && factor > max_prime_factor) {
@@ -133,16 +134,20 @@ void project3(int method) {
 		break;
 	}
 	case Method::kSecond: {
-		//more advance faster way to find biggest prime factor
-		int64_t number = 600851475143 >> 1;
-		for (int64_t factor = 3; factor < number; factor += 2, number >>= 1) {
-			if (number % factor == 0) {
-				//const auto value = number / factor;
-				if (IsPrime(factor) && factor > max_prime_factor) {
-					max_prime_factor = factor;
+		//more advance faster way to find biggest prime factors
+		std::stringstream factors;
+		int64_t number = 600851475143;
+		int64_t factor = 3;
+		for (; factor <= number; factor += 2) {
+			while (number % factor == 0) {
+				if (IsPrime(factor)) {
+					number /= factor;
+					factors << factor << " x ";
 				}
 			}
 		}
+		max_prime_factor = factor;
+		std::cout << "factors: " << factors.str() << "\n";
 		break;
 	}
 	}
@@ -626,6 +631,9 @@ void project12(int method) {
 }
 
 int main(int argc, char** argv) {
+	//std::cout << 600851475143 % 22567;
+	//exit(0);
+
 	using namespace std::chrono;
 
 	//__debugbreak();
@@ -637,7 +645,7 @@ int main(int argc, char** argv) {
 		std::cin >> problem;
 		std::cout << "method: ";
 		std::cin >> method;
-	} 
+	}
 	else {
 		problem = std::stol(argv[1]);
 		method = 0;
